@@ -1,9 +1,10 @@
 global using RitzpaStockExchange.Data;
 global using Microsoft.EntityFrameworkCore;
-using Ritzpa_Stock_Exchange.Interfaces;
 using Ritzpa_Stock_Exchange.Managers;
 using RitzpaStockExchange.Repositories;
-
+using RitzpaStockExchange.Services;
+using RitzpaStockExchange.Interfaces.IRepository;
+using RitzpaStockExchange.Interfaces.IService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,10 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IStocksRepository, StocksRepository>();
 builder.Services.AddScoped<IStocksService, StocksService>();
+builder.Services.AddScoped<IUsersService, UsersService>();
+builder.Services.AddScoped<IUserRepository, UsersRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseSqlServer(builder

@@ -9,7 +9,7 @@ namespace Ritzpa_Stock_Exchange.DTO.Inputs
         public int Amount { get; set; }
         public int? Balance { get; set; }
         public string StockSymbol { get; set; }
-
+        public string Initiator { get; set; }
 
     }
 }

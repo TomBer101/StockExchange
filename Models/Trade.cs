@@ -16,5 +16,8 @@ namespace Ritzpa_Stock_Exchange.Models
         public string StockName { get; set; }
         public virtual Stock Stock { get; set; }
 
+        public string Buyer { get; set; }
+        public string Seller { get; set; }
+
     }
 }

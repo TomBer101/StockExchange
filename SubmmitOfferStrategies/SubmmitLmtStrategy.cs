@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Diagnostics;
 using Ritzpa_Stock_Exchange.Models;
 using RitzpaStockExchange.DTO.Outputs;
-using RitzpaStockExchange.Interfaces;
+using RitzpaStockExchange.Interfaces.IStrategy;
 
 namespace RitzpaStockExchange.SubmmitOfferStrategies
 {
@@ -32,9 +32,12 @@ namespace RitzpaStockExchange.SubmmitOfferStrategies
         {
             List<Trade> result = new List<Trade>();
             IEnumerable<Command> sellCommands = stock.GetSortedSells();
+            var itemsToRemove = new List<Command>();
 
             foreach (Command sellCommand in  sellCommands)
             {
+                if (sellCommand.InitiatorId == buyCommand.InitiatorId) { continue; }
+
                 if (sellCommand.CurrentStockRate <= buyCommand.CurrentStockRate && buyCommand.Amount > 0)
                 {
                     int tradeAmount = Math.Min(sellCommand.Amount, buyCommand.Amount);
@@ -46,20 +49,34 @@ namespace RitzpaStockExchange.SubmmitOfferStrategies
                         Date = new DateTime(),
                         Stock = stock,
                         StockName = stock.StockName,
-                        StockPrice = stockPrice
+                        StockPrice = stockPrice,
+                        Buyer = buyCommand.Initiator.Email,
+                        Seller = sellCommand.Initiator.Email,
+                        
                     });
 
                     buyCommand.Amount -= tradeAmount;
                     sellCommand.Amount -= tradeAmount;
+
+                    int holder = buyCommand.Initiator.HoldingsValue;
+                    holder = sellCommand.Initiator.HoldingsValue;
                     stock.Price = stockPrice;
+
+                    buyCommand.Initiator.UpdateUserHoldings(stock, tradeAmount);
+                    sellCommand.Initiator.UpdateUserHoldings(stock, tradeAmount * (-1));
 
                     if(sellCommand.Amount == 0)
                     {
-                        stock.Sells.Remove(sellCommand);
+                        itemsToRemove.Add(sellCommand);
                     }
 
                 }
                 else break;
+            }
+
+            foreach (var item in itemsToRemove)
+            {
+                stock.Sells.Remove(item);
             }
 
             if (buyCommand.Amount > 0)
@@ -76,32 +93,48 @@ namespace RitzpaStockExchange.SubmmitOfferStrategies
         {
             IEnumerable<Trade> result = new List<Trade>();
             IEnumerable<Command> buyCommands = stock.GetSortedBuys();
+            var itemsToRemove = new List<Command>();
 
-            result = buyCommands.Select(buyCommand =>
+            result = buyCommands.Where(buyCommand => buyCommand.CurrentStockRate >= sellCommand.CurrentStockRate &&
+                                        sellCommand.InitiatorId != buyCommand.InitiatorId)
+                .Select(buyCommand =>
+                {
+                    int tradeAmount = Math.Min(buyCommand.Amount, sellCommand.Amount);
+                    int tradePrice = (int)buyCommand.CurrentStockRate;
+
+                    sellCommand.Amount -= tradeAmount;
+                    buyCommand.Amount -= tradeAmount;
+
+                    int holder = buyCommand.Initiator.HoldingsValue;
+                    holder = sellCommand.Initiator.HoldingsValue;
+                    stock.Price = tradePrice;
+
+                    buyCommand.Initiator.UpdateUserHoldings(stock, tradeAmount);
+                    sellCommand.Initiator.UpdateUserHoldings(stock, tradeAmount * (-1));
+
+                    if (buyCommand.Amount == 0)
+                    {
+                        itemsToRemove.Add(buyCommand);
+                    }
+
+                    return new Trade
+                    {
+                        Amount = tradeAmount,
+                        Date = DateTime.Now,
+                        Stock = stock,
+                        StockName = stock.StockName,
+                        StockPrice = tradePrice,
+                        Buyer = buyCommand.Initiator.Name,
+                        Seller= sellCommand.Initiator.Name
+                    };
+                }).ToList();
+
+            foreach (var item in itemsToRemove)
             {
-                int tradeAmount = Math.Min(buyCommand.Amount, sellCommand.Amount);
-                int tradePrice = (int)buyCommand.CurrentStockRate;
+                stock.Buys.Remove(item);
+            }
 
-                sellCommand.Amount -= tradeAmount;
-                buyCommand.Amount -= tradeAmount;
-                stock.Price = tradePrice;
-
-                if (buyCommand.Amount == 0)
-                {
-                    stock.Buys.Remove(buyCommand);
-                }
-
-                return new Trade
-                {
-                    Amount = tradeAmount,
-                    Date = DateTime.Now,
-                    Stock = stock,
-                    StockName = stock.StockName,
-                    StockPrice = tradePrice,
-                };
-            }).ToList();
-
-            if(sellCommand.Amount > 0)
+            if (sellCommand.Amount > 0)
             {
                 stock.Sells.Add(sellCommand);
             }

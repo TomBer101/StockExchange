@@ -1,10 +1,11 @@
 ﻿using Ritzpa_Stock_Exchange.DTO.Inputs;
 using Ritzpa_Stock_Exchange.DTO.Outputs;
-using Ritzpa_Stock_Exchange.Interfaces;
 using Ritzpa_Stock_Exchange.Models;
 using RitzpaStockExchange.DTO.Outputs;
-using RitzpaStockExchange.Interfaces;
-using RitzpaStockExchange.Services;
+using RitzpaStockExchange.Factories;
+using RitzpaStockExchange.Interfaces.IRepository;
+using RitzpaStockExchange.Interfaces.IService;
+using RitzpaStockExchange.Interfaces.IStrategy;
 
 namespace Ritzpa_Stock_Exchange.Managers
 {
@@ -17,7 +18,7 @@ namespace Ritzpa_Stock_Exchange.Managers
             _stocksRepository = stocksRepository;
         }
 
-        public void Add(StockInput stockInput)
+        public async Task AddAsync(StockInput stockInput)
         {
             var stock = new Stock
             {
@@ -26,18 +27,18 @@ namespace Ritzpa_Stock_Exchange.Managers
                 CompanyName = stockInput.CompanyName
             };
 
-            _stocksRepository.Add(stock);
+            await _stocksRepository.AddAsync(stock);
         }
 
-        public void Delete(string StockSymbol)
+        public async Task DeleteAsync(string StockSymbol)
         {
-            _stocksRepository.Delete(StockSymbol.ToUpper());
+            await _stocksRepository.DeleteAsync(StockSymbol.ToUpper());
         }
 
-        public IEnumerable<StockSummary> GetAllStocks()
+        public async Task<IEnumerable<StockSummary>> GetAllStocksAsync()
         {
             IEnumerable<StockSummary>? result = null;
-            IEnumerable<Stock> stocks = _stocksRepository.GetAll();
+            IEnumerable<Stock?> stocks = await _stocksRepository.GetAllAsync();
             
             if(stocks.Count() != 0)
             {
@@ -53,10 +54,10 @@ namespace Ritzpa_Stock_Exchange.Managers
             return result;
         }
 
-        public StockDetailed GetStock(string stockSymbol)
+        public async Task<StockDetailed> GetStockAsync(string stockSymbol)
         {
             StockDetailed? result = null;
-            Stock stock = _stocksRepository.GetStock(stockSymbol.ToUpper());
+            Stock stock = await _stocksRepository.GetStockAsync(stockSymbol.ToUpper());
 
             if(stock != null)
             {
@@ -74,9 +75,9 @@ namespace Ritzpa_Stock_Exchange.Managers
             return result;
         }
 
-        public SubmmitOfferResult submitCommand(CommandInput commandInput) // TODO: change this method to return list of trades that has been made.
+        public async Task<SubmmitOfferResult> submitOfferAsync(CommandInput commandInput, User user) // TODO: change this method to return list of trades that has been made.
         {
-            Stock stock = _stocksRepository.GetStock(commandInput.StockSymbol.ToUpper());
+            Stock stock = await _stocksRepository.GetStockAsync(commandInput.StockSymbol.ToUpper());
 
             if(stock == null)
             {
@@ -88,23 +89,32 @@ namespace Ritzpa_Stock_Exchange.Managers
                 Amount = commandInput.Amount,
                 CommandType = commandInput.CommandType,
                 CommandWay = commandInput.Way,
-                CurrentStockRate = commandInput.Balance,
-                //Stock = stock,
-                //StockName = stock.StockName
             };
 
-            ISubmmitOfferStradegy submmitStrategy = CommandMatchStrategyFactory.CreatSubmmitStrategy(newCommand.CommandType);
+            newCommand.SetInitiator(user);
+
+            ISubmmitOfferStradegy submmitStrategy = OfferMatchStrategyFactory.CreatSubmmitStrategy(newCommand.CommandType);
             SubmmitOfferResult resultToUser = submmitStrategy.HandleCommandSubmition(stock, newCommand);
             _stocksRepository.Update();
             return resultToUser;
         }
 
-        public IEnumerable<StockLists> GetStocksLists()
-        {
-            IEnumerable<Stock> stocks = _stocksRepository.GetAll();
-            IEnumerable<StockLists> result = stocks.Select(stock => new StockLists(stock)).ToList();
+        //public IEnumerable<StockLists> GetStocksLists()
+        //{
+        //    IEnumerable<Stock> stocks = _stocksRepository.GetAll();
+        //    //IEnumerable<StockLists> result = stocks.Select(stock => new StockLists(stock)).ToList();
 
-            return result;
+        //    //return result;
+        //    foreach(Stock stock in stocks)
+        //    {
+        //        yield return new StockLists(stock);
+        //    }
+        //}
+
+        public async Task<StockLists> GetStockListsAsync(string stockSymbol)
+        {
+            Stock stock = await _stocksRepository.GetStockAsync(stockSymbol);
+            return new StockLists(stock);
         }
     }
 }

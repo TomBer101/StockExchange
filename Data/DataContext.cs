@@ -1,6 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Ritzpa_Stock_Exchange.Models;
+using RitzpaStockExchange.Models;
+using RitzpaStockExchange.Utils;
 
 namespace RitzpaStockExchange.Data
 {
@@ -13,6 +17,9 @@ namespace RitzpaStockExchange.Data
         public DbSet<Stock> Stocks{ get; set; }
         public DbSet<Command> Commands { get; set; }
         public DbSet<Trade> Trades { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<UserStock> UserStocks { get; set; }
+        public DbSet<UserAction> UserActions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -21,8 +28,13 @@ namespace RitzpaStockExchange.Data
                 .WithOne(command => command.BuyStock)
                 .HasForeignKey(command => command.BuyStockName)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-                
 
+
+            //modelBuilder.Entity<User>()
+            //    .Property(user => user.UserStocks)
+            //    .HasConversion(
+            //        d => JsonConvert.SerializeObject(d),
+            //        s => JsonConvert.DeserializeObject<Dictionary<string, Holding>>(s));
 
             modelBuilder.Entity<Stock>()
                 .HasMany(stock => stock.Sells)
@@ -34,6 +46,19 @@ namespace RitzpaStockExchange.Data
                 .HasMany(stock => stock.Trades)
                 .WithOne(trade => trade.Stock)
                 .HasForeignKey(trade => trade.StockName);
+
+            modelBuilder.Entity<User>()
+                .HasMany(user => user.UserStocks)
+                .WithOne(share => share.User)
+                .HasForeignKey(share => share.UserId);
+
+            //modelBuilder.Entity<Holding>()
+            //    .HasKey(h => h.Id);
+
+            //modelBuilder.Entity<Command>()
+            //    .HasOne(c => c.Initiator)
+            //    .WithMany()
+            //    .HasForeignKey(c => c.InitiatorId);
 
 
 

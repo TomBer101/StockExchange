@@ -1,7 +1,7 @@
 ﻿using Ritzpa_Stock_Exchange.Models;
 using RitzpaStockExchange.DTO.Outputs;
 
-namespace RitzpaStockExchange.Interfaces
+namespace RitzpaStockExchange.Interfaces.IStrategy
 {
     public interface ISubmmitOfferStradegy
     {

@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Ritzpa_Stock_Exchange.DTO.Inputs;
 using Ritzpa_Stock_Exchange.DTO.Outputs;
-using Ritzpa_Stock_Exchange.Interfaces;
 using Ritzpa_Stock_Exchange.Models;
 using RitzpaStockExchange.DTO.Outputs;
+using RitzpaStockExchange.Interfaces.IService;
 
 namespace RitzpaStockExchange.Controllers
 {
@@ -13,17 +13,19 @@ namespace RitzpaStockExchange.Controllers
     public class StocksController : ControllerBase
     {
         private readonly IStocksService _stocksService;
+        private readonly IUsersService _usersService;
 
-        public StocksController(IStocksService stocksService)
+        public StocksController(IStocksService stocksService, IUsersService userService)
         {
             _stocksService = stocksService;
+            _usersService = userService;
         }
 
 
         [HttpGet("GetAllStocks")]
-        public async Task<ActionResult<IEnumerable<StockSummary>>> GetAllStocks()
+        public async Task<ActionResult<IEnumerable<StockSummary>>> GetAllStocks() // naybe use yeild return because manipulating each stock
         {
-            IEnumerable<StockSummary> stocks = _stocksService.GetAllStocks();
+            IEnumerable<StockSummary> stocks = await _stocksService.GetAllStocksAsync();
 
             if(stocks == null)
             {
@@ -42,7 +44,7 @@ namespace RitzpaStockExchange.Controllers
                 return BadRequest("A stock name must contain letters only!");
             }
 
-            StockDetailed stockDetailed = _stocksService.GetStock(symbol.ToUpper());
+            StockDetailed stockDetailed = await _stocksService.GetStockAsync(symbol.ToUpper());
             if(stockDetailed == null)
             {
                 return NotFound($"There is no stock calld {symbol}");
@@ -53,11 +55,11 @@ namespace RitzpaStockExchange.Controllers
         }
 
         [HttpPost("CreateStock")]
-        public IActionResult CreateStock(StockInput stockInput)
+        public async Task<IActionResult> CreateStockAsync(StockInput stockInput)
         {
             try
             {
-                _stocksService.Add(stockInput);
+                await _stocksService.AddAsync(stockInput);
                 return Ok();
             }
             catch (Exception ex)
@@ -67,32 +69,44 @@ namespace RitzpaStockExchange.Controllers
 
         }
 
-        [HttpPut("SubmmitOffer")]
-        public async Task<ActionResult<SubmmitOfferResult>> SubmitOffer(CommandInput commandInput)
+        //[HttpPut("SubmmitOffer")]
+        //public async Task<ActionResult<SubmmitOfferResult>> SubmitOffer(CommandInput commandInput)
+        //{
+        //    if(commandInput.Amount < 1)
+        //    {
+        //        return BadRequest("The amount has to be greater then 0!");
+        //    }
+
+        //    try
+        //    {
+        //        User user = _usersService.GetUser(commandInput.Initiator);
+        //        SubmmitOfferResult result =  _stocksService.submitCommand(commandInput, user);
+        //        return Ok(result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return NotFound(ex.Message);
+        //    }
+
+        //}
+
+        //[HttpGet("GetStocksLists")]
+        //public async Task<IEnumerable<StockLists>> GetStockLists()
+        //{
+        //    return await _stocksService.GetStocksListsAsync();
+        //}
+
+        [HttpGet("GetStockLists/{symbol}")]
+        public async Task<ActionResult<StockLists>> GetStockLists(string symbol)
         {
-            if(commandInput.Amount < 1)
-            {
-                return BadRequest("The amount has to be greater then 0!");
-            }
-
-            try
-            {
-                SubmmitOfferResult result =  _stocksService.submitCommand(commandInput);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return NotFound(ex.Message);
-            }
-
+            return Ok(await _stocksService.GetStockListsAsync(symbol));
         }
 
-        [HttpGet("GetStocksLists")]
-        public async Task<IEnumerable<StockLists>> GetStockLists()
+        [HttpGet("GetStocksNames")]
+        public async Task<ActionResult<IEnumerable<string>>> GetStocksNames() // use yeild return
         {
-            return _stocksService.GetStocksLists();
+            return NotFound("Function was not implamented yet");
         }
-
 
     }
 }

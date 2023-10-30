@@ -30,6 +30,21 @@ namespace Ritzpa_Stock_Exchange.Models
         public virtual Stock BuyStock { get; set; }
 
         public string? SellStockName { get; set; }
-        public virtual Stock SellStock { get; set;    }
+        public virtual Stock SellStock { get; set; }
+
+        public string? InitiatorId { get; private set; }
+        public User? Initiator { get; private set; }
+
+        public void SetInitiator(User initiator)
+        {
+            Initiator = initiator;
+            InitiatorId = initiator.Email;
+        }
+
+        //public Command(User initiator)
+        //{
+        //    Initiator = initiator;
+        //    InitiatorId = initiator.Name;
+        //}
     }
 }

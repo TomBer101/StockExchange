@@ -1,6 +1,7 @@
-﻿using Microsoft.Extensions.Options;
-using Ritzpa_Stock_Exchange.Interfaces;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Options;
 using Ritzpa_Stock_Exchange.Models;
+using RitzpaStockExchange.Interfaces.IRepository;
 
 namespace RitzpaStockExchange.Repositories
 {
@@ -21,7 +22,7 @@ namespace RitzpaStockExchange.Repositories
         //    }
         //};
 
-        private static DataContext db;
+        private static DataContext? db;
 
         public StocksRepository(DataContext _db)
         {
@@ -29,51 +30,50 @@ namespace RitzpaStockExchange.Repositories
         }
 
 
-        public void Add(Stock stock)
+        public async Task AddAsync(Stock stock)
         {
             try
             {
 
-                if (db.Stocks.FirstOrDefault(s => s.StockName == stock.StockName) == null)
+                if (await db.Stocks.FirstOrDefaultAsync(s => s.StockName == stock.StockName) == null)
                 {
-                    db.Stocks.Add(stock);
-                    db.SaveChanges();
+                    await db.Stocks.AddAsync(stock);
+                    await db.SaveChangesAsync();
                 }
                 else { throw new Exception($"{stock.StockName} already exist!"); }
             }
             catch (Exception ex)
             {
-
-                throw;
+                Console.WriteLine(ex.ToString());
             }
         }
 
-        public void Delete(string symbol)
+        public async Task DeleteAsync(string symbol)
         {
             try
             {
-                Stock stock = db.Stocks.FirstOrDefault(s => s.StockName == symbol);
+                Stock? stock = await db.Stocks.FirstOrDefaultAsync(s => s.StockName == symbol);
                 if (stock != null)
                 {
                     db.Stocks.Remove(stock);
+                    await db.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
             {
-
-                throw;
+                Console.WriteLine(ex.Message);
             }
         }
 
-        public IEnumerable<Stock> GetAll()
+        public async Task<IEnumerable<Stock>> GetAllAsync()
         {
             try
             {
-                IEnumerable<Stock> stocks =  db.Stocks;
+                var stocks = await db.Stocks.ToListAsync();
                 foreach (Stock stock in stocks)
                 {
-                    db.Entry(stock).Collection(s => s.Sells).Load();
-                    db.Entry(stock).Collection(s => s.Buys).Load();
+                    await db.Entry(stock).Collection(s => s.Sells).LoadAsync();
+                    await db.Entry(stock).Collection(s => s.Buys).LoadAsync();
 
                 }
 
@@ -81,47 +81,46 @@ namespace RitzpaStockExchange.Repositories
             }
             catch (Exception ex)
             {
-
-                throw;
+                Console.WriteLine(ex.Message);
+                return new List<Stock>();
             };
         }
 
-        public Stock GetStock(string i_symbol)
+        public async Task<Stock?> GetStockAsync(string i_symbol)
         {
             try
             {
-                Stock stock = db.Stocks.FirstOrDefault(s => s.StockName == i_symbol);
+                Stock stock = await db.Stocks.FirstOrDefaultAsync(s => s.StockName == i_symbol);
                 if(stock != null)
                 {
-                    db.Entry(stock).Collection(s => s.Sells).Load();
-                    db.Entry(stock).Collection(s => s.Buys).Load();
+                    await db.Entry(stock).Collection(s => s.Sells).LoadAsync();
+                    await db.Entry(stock).Collection(s => s.Buys).LoadAsync();
                 }
 
                 return stock;
             }
             catch (Exception ex)
             {
-
-                throw;
+                Console.WriteLine(ex.Message);
+                return null;
             }
         }
 
-        public void Update(string stoke, Stock newStock)
+        public async Task UpdateAsync(string stoke, Stock newStock)
         {
             try
             {
-                Stock toRemove = db.Stocks.FirstOrDefault(s => s.StockName == stoke);
-                if (toRemove != null)
+                var stockToRemove = await db.Stocks.FirstOrDefaultAsync(s => s.StockName == stoke);
+                if (stockToRemove != null)
                 {
-                    db.Stocks.Remove(toRemove);
-                    db.Stocks.Add(newStock);
-                    db.SaveChanges();
+                    db.Stocks.Remove(stockToRemove);
+                    await db.Stocks.AddAsync(newStock);
+                    await db.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
             {
-
-                throw;
+                Console.Write(ex.Message);
             }
         }
 

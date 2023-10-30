@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RitzpaStockExchange.Data;
 
@@ -11,9 +12,11 @@ using RitzpaStockExchange.Data;
 namespace RitzpaStockExchange.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230620085429_AddedCommandInitiator")]
+    partial class AddedCommandInitiator
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,69 +24,6 @@ namespace RitzpaStockExchange.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("RitzpaStockExchange.Models.UserAction", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CurrencyAfter")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CurrencyBefore")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Stock")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserActions");
-                });
-
-            modelBuilder.Entity("RitzpaStockExchange.Models.UserStock", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Amount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("StockId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("StockId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserStocks");
-                });
 
             modelBuilder.Entity("Ritzpa_Stock_Exchange.Models.Command", b =>
                 {
@@ -109,6 +49,7 @@ namespace RitzpaStockExchange.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("InitiatorId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("SellStockName")
@@ -182,64 +123,15 @@ namespace RitzpaStockExchange.Migrations
 
             modelBuilder.Entity("Ritzpa_Stock_Exchange.Models.User", b =>
                 {
-                    b.Property<string>("Email")
+                    b.Property<string>("Name")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<byte[]>("HashSalt")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
+                    b.Property<string>("RseHoldings")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<byte[]>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<int>("PrevMoney")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("cashMoney")
-                        .HasColumnType("int");
-
-                    b.HasKey("Email");
+                    b.HasKey("Name");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("RitzpaStockExchange.Models.UserAction", b =>
-                {
-                    b.HasOne("Ritzpa_Stock_Exchange.Models.User", "User")
-                        .WithMany("UserActions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("RitzpaStockExchange.Models.UserStock", b =>
-                {
-                    b.HasOne("Ritzpa_Stock_Exchange.Models.Stock", "Stock")
-                        .WithMany()
-                        .HasForeignKey("StockId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Ritzpa_Stock_Exchange.Models.User", "User")
-                        .WithMany("UserStocks")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Stock");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Ritzpa_Stock_Exchange.Models.Command", b =>
@@ -250,7 +142,9 @@ namespace RitzpaStockExchange.Migrations
 
                     b.HasOne("Ritzpa_Stock_Exchange.Models.User", "Initiator")
                         .WithMany()
-                        .HasForeignKey("InitiatorId");
+                        .HasForeignKey("InitiatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Ritzpa_Stock_Exchange.Models.Stock", "SellStock")
                         .WithMany("Sells")
@@ -281,13 +175,6 @@ namespace RitzpaStockExchange.Migrations
                     b.Navigation("Sells");
 
                     b.Navigation("Trades");
-                });
-
-            modelBuilder.Entity("Ritzpa_Stock_Exchange.Models.User", b =>
-                {
-                    b.Navigation("UserActions");
-
-                    b.Navigation("UserStocks");
                 });
 #pragma warning restore 612, 618
         }

@@ -10,6 +10,7 @@ using Ritzpa_Stock_Exchange.Models;
 using RitzpaStockExchange.DTO.Outputs;
 using Ritzpa_Stock_Exchange.DTO.Inputs;
 using RitzpaStockExchange.Interfaces.IService;
+using Microsoft.AspNetCore.Authorization;
 
 namespace RitzpaStockExchange.Controllers
 {
@@ -22,6 +23,13 @@ namespace RitzpaStockExchange.Controllers
         public UsersController(IUsersService usersService)
         {
             _usersService = usersService;
+        }
+
+        [HttpGet, Authorize]
+        public async Task<ActionResult<string>> GetMe()
+        {
+            var userName = _usersService.GetMyName();
+            return Ok(userName);
         }
 
         // GET: api/Users

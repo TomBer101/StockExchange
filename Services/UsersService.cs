@@ -4,6 +4,7 @@ using Ritzpa_Stock_Exchange.Models;
 using RitzpaStockExchange.DTO.Outputs;
 using RitzpaStockExchange.Interfaces.IRepository;
 using RitzpaStockExchange.Interfaces.IService;
+using System.Security.Claims;
 
 namespace RitzpaStockExchange.Services
 {
@@ -11,11 +12,13 @@ namespace RitzpaStockExchange.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IStocksRepository _stockRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public UsersService(IUserRepository userRepository, IStocksRepository stocksRepository)
+        public UsersService(IUserRepository userRepository, IStocksRepository stocksRepository, IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
             _stockRepository = stocksRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public void AddUser(UserInput userInputu)
@@ -52,6 +55,17 @@ namespace RitzpaStockExchange.Services
                 Console.WriteLine(ex.Message);
                 throw ex;
             }
+        }
+
+        public string GetMyName()
+        {
+            var result = string.Empty;
+            if (_httpContextAccessor.HttpContext != null)
+            {
+                result = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email);
+            }
+
+            return result;
         }
 
         public IEnumerable<UserDto> GetUsers()

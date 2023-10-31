@@ -10,6 +10,7 @@ namespace RitzpaStockExchange.Interfaces.IService
         public User GetUser(string userEmail);
         public void UpdateUser(User user);
         public void AddUser(UserInput userInputu);
+        public string GetMyName();
 
         IEnumerable<UserDto> GetUsers();
         bool IsExists(string name);

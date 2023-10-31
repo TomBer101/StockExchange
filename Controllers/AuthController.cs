@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Ritzpa_Stock_Exchange.Models;
 using Ritzpa_Stock_Exchange.DTO.Inputs;
 using RitzpaStockExchange.Interfaces.IService;
+using Microsoft.AspNetCore.Authorization;
 
 namespace RitzpaStockExchange.Controllers
 {
@@ -43,6 +44,8 @@ namespace RitzpaStockExchange.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+
 
 
     }

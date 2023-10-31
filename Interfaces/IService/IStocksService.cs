@@ -7,7 +7,7 @@ namespace RitzpaStockExchange.Interfaces.IService
 {
     public interface IStocksService
     {
-        Task AddAsync(StockInput stockInput);
+        Task<Stock> AddAsync(StockInput stockInput);
         Task<IEnumerable<StockSummary>> GetAllStocksAsync();
         Task<StockDetailed> GetStockAsync(string stockSymbol);
         Task DeleteAsync(string StockSymbol);

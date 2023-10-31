@@ -63,6 +63,7 @@ namespace RitzpaStockExchange.Services
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.Role),
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(

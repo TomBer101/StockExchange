@@ -18,7 +18,7 @@ namespace Ritzpa_Stock_Exchange.Managers
             _stocksRepository = stocksRepository;
         }
 
-        public async Task AddAsync(StockInput stockInput)
+        public async Task<Stock> AddAsync(StockInput stockInput)
         {
             var stock = new Stock
             {
@@ -28,6 +28,7 @@ namespace Ritzpa_Stock_Exchange.Managers
             };
 
             await _stocksRepository.AddAsync(stock);
+            return stock;
         }
 
         public async Task DeleteAsync(string StockSymbol)

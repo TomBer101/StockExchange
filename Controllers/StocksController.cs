@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Ritzpa_Stock_Exchange.DTO.Inputs;
 using Ritzpa_Stock_Exchange.DTO.Outputs;
@@ -54,13 +55,13 @@ namespace RitzpaStockExchange.Controllers
 
         }
 
-        [HttpPost("CreateStock")]
+        [HttpPost("CreateStock"), Authorize(Roles = "Broker")]
         public async Task<IActionResult> CreateStockAsync(StockInput stockInput)
         {
             try
             {
-                await _stocksService.AddAsync(stockInput);
-                return Ok();
+                Stock stock = await _stocksService.AddAsync(stockInput);
+                return Ok(stock);
             }
             catch (Exception ex)
             {

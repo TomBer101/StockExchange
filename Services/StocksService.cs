@@ -18,7 +18,7 @@ namespace Ritzpa_Stock_Exchange.Managers
             _stocksRepository = stocksRepository;
         }
 
-        public async Task<Stock> AddAsync(StockInput stockInput)
+        public async  Task<Stock> AddAsync(StockInput stockInput)
         {
             var stock = new Stock
             {
@@ -27,8 +27,12 @@ namespace Ritzpa_Stock_Exchange.Managers
                 CompanyName = stockInput.CompanyName
             };
 
-            await _stocksRepository.AddAsync(stock);
-            return stock;
+            bool isAdded =  await _stocksRepository.AddAsync(stock);
+            if (isAdded) 
+            {
+                return stock;
+            }
+            return null;
         }
 
         public async Task DeleteAsync(string StockSymbol)
@@ -36,10 +40,10 @@ namespace Ritzpa_Stock_Exchange.Managers
             await _stocksRepository.DeleteAsync(StockSymbol.ToUpper());
         }
 
-        public async Task<IEnumerable<StockSummary>> GetAllStocksAsync()
+        public  IEnumerable<StockSummary> GetAllStocksAsync()
         {
             IEnumerable<StockSummary>? result = null;
-            IEnumerable<Stock?> stocks = await _stocksRepository.GetAllAsync();
+            IEnumerable<Stock?> stocks =  _stocksRepository.GetAllAsync().Result;
             
             if(stocks.Count() != 0)
             {

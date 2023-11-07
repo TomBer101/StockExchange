@@ -10,6 +10,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
+using RitzpaStockExchange.Interfaces.IManagers;
+using RitzpaStockExchange.Factories;
+using RitzpaStockExchange.Managers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +53,11 @@ builder.Services.AddScoped<IStocksService, StocksService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IUserRepository, UsersRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPublishStockManager,PublishStockManager>();
+
+//builder.Services.AddScoped<CreateStockManagerFactory>();
+
+//builder.Services.AddTransient<IPublishStockManager, IPublishStockManager>();
 
 builder.Services.AddHttpContextAccessor();
 

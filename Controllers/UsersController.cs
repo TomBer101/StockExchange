@@ -25,12 +25,7 @@ namespace RitzpaStockExchange.Controllers
             _usersService = usersService;
         }
 
-        [HttpGet, Authorize]
-        public async Task<ActionResult<string>> GetMe()
-        {
-            var userName = _usersService.GetMyName();
-            return Ok(userName);
-        }
+       
 
         // GET: api/Users
         [HttpGet("GetUsers")] // only an admin can see all of the users

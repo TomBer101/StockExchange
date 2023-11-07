@@ -35,6 +35,7 @@ namespace RitzpaStockExchange.Services
                 PasswordHash = passwordHash,
                 HashSalt = passwordSalt,
                 Name = input.Name,
+                Role = input.Role,
             };
             _userRepository.Add(user);
             return user;

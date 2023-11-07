@@ -12,13 +12,12 @@ namespace RitzpaStockExchange.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IStocksRepository _stockRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public UsersService(IUserRepository userRepository, IStocksRepository stocksRepository, IHttpContextAccessor httpContextAccessor)
+
+        public UsersService(IUserRepository userRepository, IStocksRepository stocksRepository)
         {
             _userRepository = userRepository;
             _stockRepository = stocksRepository;
-            _httpContextAccessor = httpContextAccessor;
         }
 
         public void AddUser(UserInput userInputu)
@@ -57,17 +56,7 @@ namespace RitzpaStockExchange.Services
             }
         }
 
-        public string GetMyName()
-        {
-            var result = string.Empty;
-            if (_httpContextAccessor.HttpContext != null)
-            {
-                result = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Email);
-            }
-
-            return result;
-        }
-
+       
         public IEnumerable<UserDto> GetUsers()
         {
             IEnumerable<User> users = _userRepository.GetAll();
@@ -86,13 +75,16 @@ namespace RitzpaStockExchange.Services
             return _userRepository.IsExists(name);
         }
 
-        public void UpdateUser(User user)
+        public async Task<User> UpdateUserStocks(string email, Stock stock, int amount)
         {
             try
             {
-                _userRepository.Update(user.Name, user);
+               var res = await _userRepository.UpdateAsync(email, stock,amount);
+                return res;
             }
             catch(Exception ex) { throw; }
         }
+
+        
     }
 }

@@ -21,5 +21,10 @@ namespace RitzpaStockExchange.Models
             }
         }
 
+        public override string  ToString()
+        {
+            return ($"Stock: {StockId}, Amount: {Amount}, Price: {Stock.Price}");
+        }
+
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Ritzpa_Stock_Exchange.Models;
 using RitzpaStockExchange.Interfaces.IRepository;
+using RitzpaStockExchange.Models;
 
 namespace RitzpaStockExchange.Repositories
 {
@@ -16,7 +17,7 @@ namespace RitzpaStockExchange.Repositories
         {
             try
             {
-                if(context.Users.FirstOrDefault(u => u.Name == user.Name) == null)
+                if (context.Users.FirstOrDefault(u => u.Name == user.Name) == null)
                 {
                     context.Users.Add(user);
                     context.SaveChanges();
@@ -34,12 +35,12 @@ namespace RitzpaStockExchange.Repositories
             try
             {
                 User user = context.Users.FirstOrDefault(u => u.Name == userName);
-                if(user != null)
+                if (user != null)
                 {
                     context.Users.Remove(user);
                 }
             }
-            catch(Exception ex) { throw; }
+            catch (Exception ex) { throw; }
 
         }
 
@@ -54,7 +55,7 @@ namespace RitzpaStockExchange.Repositories
                 }
                 return users;
             }
-            catch( Exception ex ) { throw; }
+            catch (Exception ex) { throw; }
         }
 
         public User GetUser(string userEmail)
@@ -62,13 +63,13 @@ namespace RitzpaStockExchange.Repositories
             try
             {
                 User user = context.Users.FirstOrDefault(u => u.Email == userEmail);
-                if(user != null)
+                if (user != null)
                 {
 
                 }
                 return user;
             }
-            catch(Exception e) { throw; }
+            catch (Exception e) { throw; }
         }
 
         public bool IsExists(string name)
@@ -77,23 +78,40 @@ namespace RitzpaStockExchange.Repositories
             return false;
         }
 
-        public void Update(string user, User newUser)
+        public async Task<User> UpdateAsync(string email, Stock stock, int amount)
         {
             try
             {
-                User userToRemove = context.Users.FirstOrDefault(u => u.Name == user);
-                if(userToRemove != null)
+
+                User? newUser = await context.Users.FirstOrDefaultAsync(u => u.Email == email);
+                if (newUser != null)
                 {
-                    context.Users.Remove(userToRemove);
-                    context.Users.Add(newUser);
-                    context.SaveChanges();
+                    //context.Users.Remove(newUser);
+                    var userStock = new UserStock()
+                    {
+                        Amount = amount,
+                        Stock = stock,
+                        StockId = stock.StockName,
+                        User = newUser,
+                        UserId = newUser.Email
+                    };
+                    newUser?.UserStocks?.Add(userStock);
+
+                    //await context.Users.AddAsync(newUser);
+                    await context.SaveChangesAsync();
+
+                    return newUser;
                 }
-            } catch(Exception ex) { throw; }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to update user", ex);
+            }
+
         }
 
-        public void Update()
-        {
-            context.SaveChanges();
-        }
+
     }
 }

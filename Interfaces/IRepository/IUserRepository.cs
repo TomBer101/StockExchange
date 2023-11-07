@@ -8,9 +8,8 @@ namespace RitzpaStockExchange.Interfaces.IRepository
         User GetUser(string userEmail);
         void Add(User user);
         void Delete(string userName);
-        void Update(string user, User newUser);
+        Task<User> UpdateAsync(string email, Stock stock,int amount );
 
-        void Update();
         bool IsExists(string name);
         //void submitCommand(Command newCommand);
     }

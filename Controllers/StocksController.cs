@@ -5,7 +5,10 @@ using Ritzpa_Stock_Exchange.DTO.Inputs;
 using Ritzpa_Stock_Exchange.DTO.Outputs;
 using Ritzpa_Stock_Exchange.Models;
 using RitzpaStockExchange.DTO.Outputs;
+using RitzpaStockExchange.Factories;
+using RitzpaStockExchange.Interfaces.IManagers;
 using RitzpaStockExchange.Interfaces.IService;
+using RitzpaStockExchange.Managers;
 
 namespace RitzpaStockExchange.Controllers
 {
@@ -13,20 +16,27 @@ namespace RitzpaStockExchange.Controllers
     [ApiController]
     public class StocksController : ControllerBase
     {
-        private readonly IStocksService _stocksService;
-        private readonly IUsersService _usersService;
+        private  IStocksService _stocksService;
+        private  IUsersService _usersService;
+        //private readonly CreateStockManagerFactory _createStockManagerFactorymo;
+        private  IPublishStockManager _publishStockManager;
 
-        public StocksController(IStocksService stocksService, IUsersService userService)
+
+        public StocksController(IStocksService stocksService, IUsersService userService,
+            IPublishStockManager publishStockManager)
         {
             _stocksService = stocksService;
             _usersService = userService;
+            _publishStockManager = publishStockManager;
+
+            //_createStockManagerFactory = createStockManagerFactory;
         }
 
 
         [HttpGet("GetAllStocks")]
         public async Task<ActionResult<IEnumerable<StockSummary>>> GetAllStocks() // naybe use yeild return because manipulating each stock
         {
-            IEnumerable<StockSummary> stocks = await _stocksService.GetAllStocksAsync();
+            IEnumerable<StockSummary> stocks =  _stocksService.GetAllStocksAsync();
 
             if(stocks == null)
             {
@@ -58,14 +68,28 @@ namespace RitzpaStockExchange.Controllers
         [HttpPost("CreateStock"), Authorize(Roles = "Broker")]
         public async Task<IActionResult> CreateStockAsync(StockInput stockInput)
         {
+            //IPublishStockManager publishStovkManager = _createStockManagerFactory.CreateManager();
+
             try
             {
-                Stock stock = await _stocksService.AddAsync(stockInput);
-                return Ok(stock);
+                var createdStock =  _publishStockManager.PublishStock(stockInput);
+                if (createdStock != null) {
+
+                    return Ok(createdStock);
+                }
+
+
+                return StatusCode(500);
+                
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
-                return Conflict(ex.Message);
+
+                Console.WriteLine("Error creating stock: ", ex);
+                return BadRequest(ex.Message);
+            } catch (Exception ex)
+            {
+                return StatusCode(500);
             }
 
         }

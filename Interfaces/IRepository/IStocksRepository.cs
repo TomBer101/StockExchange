@@ -6,7 +6,7 @@ namespace RitzpaStockExchange.Interfaces.IRepository
     {
         Task<IEnumerable<Stock?>> GetAllAsync();
         Task<Stock?> GetStockAsync(string i_symbol);
-        Task AddAsync(Stock stock);
+        Task<bool> AddAsync(Stock stock);
         Task DeleteAsync(string symbol);
         Task UpdateAsync(string stoke, Stock newStock);
 

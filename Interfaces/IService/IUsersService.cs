@@ -8,10 +8,9 @@ namespace RitzpaStockExchange.Interfaces.IService
     public interface IUsersService
     {
         public User GetUser(string userEmail);
-        public void UpdateUser(User user);
+        //public void UpdateUser(User user);
         public void AddUser(UserInput userInputu);
-        public string GetMyName();
-
+        Task<User> UpdateUserStocks(string email, Stock stock, int amount);
         IEnumerable<UserDto> GetUsers();
         bool IsExists(string name);
     }

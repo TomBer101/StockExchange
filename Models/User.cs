@@ -77,6 +77,12 @@ namespace Ritzpa_Stock_Exchange.Models
             UserActions.Add(new UserAction(this.Name, this, currencyBefor, HoldingsValue + cashMoney, stock.Price * amount, stock.StockName));
         }
 
+        public override string ToString()
+        {
+            return ($@"User Name: {Name}
+                       User Stocks: {UserStocks}");
+        }
+
         //private void updateStockPrise(string symbol, int newPrice)
         //{
         //    if(RseHoldings.TryGetValue(symbol, out Holding currentHolding))

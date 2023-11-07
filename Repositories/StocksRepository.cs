@@ -29,23 +29,28 @@ namespace RitzpaStockExchange.Repositories
            db = _db;
         }
 
+        public Stock GetAsync(string id)
+        {
+            return db.Stocks.FirstOrDefaultAsync(s => s.StockName == id).Result;
+        }
 
-        public async Task AddAsync(Stock stock)
+        public async Task<bool> AddAsync(Stock stock)
         {
             try
             {
-
-                if (await db.Stocks.FirstOrDefaultAsync(s => s.StockName == stock.StockName) == null)
+                var isStock = db?.Stocks.FirstOrDefaultAsync(s => s.StockName == stock.StockName).Result;
+                if (isStock  == null)
                 {
-                    await db.Stocks.AddAsync(stock);
-                    await db.SaveChangesAsync();
+                    await addAndSaveAsync(stock);
+                    return true;
                 }
-                else { throw new Exception($"{stock.StockName} already exist!"); }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
+            return false;
+
         }
 
         public async Task DeleteAsync(string symbol)
@@ -124,6 +129,11 @@ namespace RitzpaStockExchange.Repositories
             }
         }
 
+        private async Task addAndSaveAsync(Stock stock)
+        {
+            await db.Stocks.AddAsync(stock);
+            await db.SaveChangesAsync();
+        }
 
         public void Update()
         {
